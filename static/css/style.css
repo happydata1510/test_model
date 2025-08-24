@@ -1,0 +1,18 @@
+/* AI 부동산 서비스 전용 스타일시트 */
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+.footer {
+    flex-shrink: 0;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
