@@ -1,0 +1,106 @@
+
+{% extends "layout.html" %}
+{% block title %}예측 모델{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2 class="text-center mb-4">캘리포니아 주택 가격 예측</h2>
+        <div class="card">
+            <div class="card-body">
+                <form id="predictionForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="MedInc" class="form-label">중간 소득 (만 달러)</label>
+                            <input type="number" class="form-control" id="MedInc" step="0.1" value="3.5" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="HouseAge" class="form-label">주택 연령 (년)</label>
+                            <input type="number" class="form-control" id="HouseAge" step="1" value="20" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="AveRooms" class="form-label">평균 방 개수</label>
+                            <input type="number" class="form-control" id="AveRooms" step="0.1" value="5.5" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="AveBedrms" class="form-label">평균 침실 수</label>
+                            <input type="number" class="form-control" id="AveBedrms" step="0.1" value="1.0" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="Population" class="form-label">인구</label>
+                            <input type="number" class="form-control" id="Population" step="10" value="3000" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="AveOccup" class="form-label">평균 거주자 수</label>
+                            <input type="number" class="form-control" id="AveOccup" step="0.1" value="3.0" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="Latitude" class="form-label">위도</label>
+                            <input type="number" class="form-control" id="Latitude" step="0.01" value="34.0" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="Longitude" class="form-label">경도</label>
+                            <input type="number" class="form-control" id="Longitude" step="0.01" value="-118.0" required>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">예측하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="result-container" class="mt-4 text-center" style="display: none;">
+            <h3>예상 주택 가격</h3>
+            <p class="display-6" id="result"></p>
+        </div>
+        <div id="error-container" class="alert alert-danger mt-4" style="display: none;"></div>
+    </div>
+</div>
+
+<script>
+document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const resultDiv = document.getElementById('result');
+    const resultContainer = document.getElementById('result-container');
+    const errorContainer = document.getElementById('error-container');
+
+    resultContainer.style.display = 'none';
+    errorContainer.style.display = 'none';
+
+    const features = [
+        parseFloat(document.getElementById('MedInc').value),
+        parseFloat(document.getElementById('HouseAge').value),
+        parseFloat(document.getElementById('AveRooms').value),
+        parseFloat(document.getElementById('AveBedrms').value),
+        parseFloat(document.getElementById('Population').value),
+        parseFloat(document.getElementById('AveOccup').value),
+        parseFloat(document.getElementById('Latitude').value),
+        parseFloat(document.getElementById('Longitude').value)
+    ];
+
+    try {
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ features: features })
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+            throw new Error(result.error);
+        }
+
+        resultDiv.textContent = `$${result.price.toLocaleString()}`;
+        resultContainer.style.display = 'block';
+
+    } catch (error) {
+        errorContainer.textContent = `오류: ${error.message}`;
+        errorContainer.style.display = 'block';
+    }
+});
+</script>
+{% endblock %}
